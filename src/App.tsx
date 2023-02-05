@@ -1,26 +1,79 @@
-import type { Component } from 'solid-js';
+// "typescript.validate.enable": false,
 
-import logo from './logo.svg';
-import styles from './App.module.css';
+import { createSignal, Show, For } from 'solid-js';
 
-const App: Component = () => {
+let counter = 0;
+const ENTER_KEY = 13;
+const ESCAPE_KEY = 27;
+
+const App = () => {
+  const [todos, setTodos] = createSignal([
+
+  ]);
+
+  const addTodo = (event: { target: { value: string }; keyCode: number }) => {
+    const title = event.target.value.trim();
+    if (event.keyCode === ENTER_KEY && title) {
+      setTodos((todos) => [
+        ...todos,
+        { id: counter++, title, completed: false },
+      ]);
+      event.target.value = '';
+    }
+  };
+
+  const remove = (todoId: number) => {
+    setTodos((todos) => todos.filter((todo) => todoId !== todo.id));
+  };
+
+  const toggle = (todoId: number) => {
+    setTodos((todos) =>
+      todos.map((todo) => {
+        if (todo.id !== todoId) return todo;
+        return { ...todo, completed: !todo.completed };
+      })
+    );
+  };
+
   return (
-    <div class={styles.App}>
-      <header class={styles.header}>
-        <img src={logo} class={styles.logo} alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          class={styles.link}
-          href="https://github.com/solidjs/solid"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Solid
-        </a>
+    <section class="todoapp">
+      <header class="header">
+        <h1>Todos</h1>
+        <input
+          class="new-todo"
+          placeholder="What needs to be done?"
+          onKeyDown={addTodo}
+        />
       </header>
-    </div>
+      <Show when={todos().length > 0}>
+        <ul class="todo-list">
+          <For each={todos()}>
+            {(todo) => (
+              <li
+                class="todo"
+                classList={{
+                  completed: todo.completed,
+                }}
+              >
+                <div class="view">
+                  <input
+                    type="checkbox"
+                    class="toggle"
+                    checked={todo.completed}
+                    onInput={() => toggle(todo.id)}
+                  />
+                  <label>{todo.title}</label>
+                  <button
+                    class="destroy"
+                    onClick={() => remove(todo.id)}
+                  ></button>
+                </div>
+              </li>
+            )}
+          </For>
+        </ul>
+      </Show>
+    </section>
   );
 };
 
